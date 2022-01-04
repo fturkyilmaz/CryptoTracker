@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, RefreshControl, View, Text } from "react-native";
+import {
+  FlatList,
+  RefreshControl,
+  View,
+  Text,
+  ActivityIndicator,
+  useWindowDimensions,
+  SafeAreaView,
+  Platform,
+} from "react-native";
 import CoinItem from "../../components/CoinItem";
 import { getMarketData } from "../../services/requests";
+import config from "../../config";
 
 const HomeScreen = () => {
+  const { height, width } = useWindowDimensions();
+
   const [coins, setCoins] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const fetchCoins = async (pageNumber) => {
-    if (loading) {
-      return;
-    }
-    setLoading(true);
-    const coinsData = await getMarketData(pageNumber);
-    setCoins((existingCoins) => [...existingCoins, ...coinsData]);
-    setLoading(false);
-  };
+  const [loading, setLoading] = useState(true);
 
-  const refetchCoins = async () => {
-    if (loading) {
-      return;
-    }
+  const [pageNumber, setPageNumber] = useState(0);
+
+  const fetchCoins = async () => {
     setLoading(true);
-    const coinsData = await getMarketData();
-    setCoins(coinsData);
+
+    setPageNumber((prevState) => prevState + 1);
+
+    const response = await getMarketData(pageNumber);
+
+    setCoins((existingCoins) => [...existingCoins, ...response]);
+
     setLoading(false);
   };
 
@@ -31,22 +38,62 @@ const HomeScreen = () => {
     fetchCoins();
   }, []);
 
+  // const footerIndicator = () => {
+  //   console.log("GİRDİM");
+  //   return loading ? (
+  //     <View
+  //       style={{
+  //         backgroundColor: "green",
+  //         flexDirection: "row",
+  //         height: 50,
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         position: "absolute",
+  //         bottom: 0,
+  //       }}>
+  //       <ActivityIndicator animating size="large" color={"white"} />
+  //     </View>
+  //   ) : null;
+  // };
+
   return (
-    <View>
-      <Text style={{ fontFamily: 'DroidSans', color: "white", fontSize: 25, letterSpacing: 1, paddingHorizontal: 20, paddingBottom: 5 }}>Cryptoassets</Text>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+      }}>
+      <Text
+        style={{
+          fontFamily: "DroidSans",
+          color: "white",
+          fontSize: 25,
+          letterSpacing: 1,
+          paddingHorizontal: 20,
+          paddingBottom: 5,
+        }}>
+        Kripto Para
+      </Text>
+
       <FlatList
         data={coins}
         renderItem={({ item }) => <CoinItem marketCoin={item} />}
-        onEndReached={() => fetchCoins(coins.length / 50 + 1)}
+        keyExtractor={(item) =>
+          console.log(`${item.id}_${item.symbol}`) ||
+          `${item.id}_${item.symbol}`
+        }
+        onEndReached={fetchCoins}
+        // ListFooterComponent={footerIndicator}
         refreshControl={
           <RefreshControl
             refreshing={loading}
             tintColor="white"
-            onRefresh={refetchCoins}
+            onRefresh={fetchCoins}
+            size={30}
           />
         }
+        onEndReachedThreshold={0.8}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -19,7 +19,7 @@ const CoinItem = ({ marketCoin }) => {
   const navigation = useNavigation();
 
   const percentageColor =
-    price_change_percentage_24h < 0 ? "#ea3943" : "#16c784" || 'white';
+    price_change_percentage_24h < 0 ? "#ea3943" : "#16c784" || "white";
 
   const normalizeMarketCap = (marketCap) => {
     if (marketCap > 1e12) {
@@ -40,8 +40,7 @@ const CoinItem = ({ marketCoin }) => {
   return (
     <Pressable
       style={styles.coinContainer}
-      onPress={() => navigation.navigate("CoinDetailedScreen", {coinId: id})}
-    >
+      onPress={() => navigation.navigate("CoinDetailedScreen", { coinId: id })}>
       <Image
         source={{ uri: image }}
         style={{
